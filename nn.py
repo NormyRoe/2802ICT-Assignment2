@@ -30,10 +30,10 @@ class LinearClassifier:
         Returns:
             Output logits of shape (batch_size, n_output)
         """
-        # TODO: Implement linear transformation y = Wx + b
-        # 
-        # This is a linear classifier that maps input features directly to output logits.
-        # You need to:
+        
+        ###############################################################################################
+        # Linear transformation y = Wx + b
+        #
         # 1. Multiply input X with weight matrix W: X @ W
         #    - X has shape (batch_size, n_input) 
         #    - W has shape (n_input, n_output)
@@ -41,15 +41,13 @@ class LinearClassifier:
         # 2. Add bias term b to each sample
         #    - b has shape (n_output,)
         #    - Broadcasting will handle adding bias to each batch sample
-        #
-        # Mathematical formula: output = X @ W + b
-        # Where @ is matrix multiplication
-        #
-        # Example:
-        # If X is [batch_size=2, n_input=784] and W is [784, 10], b is [10]
-        # Then X @ W gives [2, 10] and adding b gives final [2, 10]
-        
-        raise NotImplementedError
+        ###############################################################################################
+
+        # Use the autograd wrapper to perform numpy matrix multiplication and add the bias
+        y = anp.dot(X, self.W) + self.b
+
+        # Return y
+        return y
     
     def sigmoid(self, z):
         """Sigmoid activation function"""
@@ -126,15 +124,18 @@ class TwoLayerMLP:
         Returns:
             Output logits of shape (batch_size, n_output)
         """
-        # TODO: Implement the forward pass for a two-layer neural network
-        # 
+
+        ###############################################################################################
+        # The forward pass for a two-layer neural network
+        #
         # This network has the structure: Input -> Hidden Layer -> Output Layer
         # Network topology: [784] -> [30] -> [10] (for Fashion-MNIST)
-        
+        ###############################################################################################
+
+               
+        ###############################################################################################
         # First layer: linear transformation + sigmoid activation
-        # TODO: Implement z1 = X @ W1 + b1, then h1 = sigmoid(z1)
-        # 
-        # Step-by-step:
+        #
         # 1. Linear transformation: z1 = X @ W1 + b1
         #    - X has shape (batch_size, n_input) = (batch_size, 784)
         #    - W1 has shape (n_input, n_hidden) = (784, 30)
@@ -142,17 +143,18 @@ class TwoLayerMLP:
         #    - z1 will have shape (batch_size, n_hidden) = (batch_size, 30)
         # 2. Apply sigmoid activation: h1 = sigmoid(z1)
         #    - h1 is the output of the hidden layer, same shape as z1
-        #
-        # Variables to define:
-        # z1 = ...  # Linear transformation result
-        # h1 = ...  # Activated hidden layer output
-        
-        raise NotImplementedError
-        
+        ###############################################################################################
+    
+        # Use the autograd wrapper to perform numpy matrix multiplication and add the bias
+        # This is the Linear transformation
+        z1 = anp.dot(X, self.W1) + self.b1
+
+        # Apply sigmoid activation to z1
+        h1 = self.sigmoid(z1)
+
+        ###############################################################################################
         # Second layer: linear transformation (no activation for output logits)
-        # TODO: Implement z2 = h1 @ W2 + b2
         #
-        # Step-by-step:
         # 1. Linear transformation: z2 = h1 @ W2 + b2
         #    - h1 has shape (batch_size, n_hidden) = (batch_size, 30)
         #    - W2 has shape (n_hidden, n_output) = (30, 10)
@@ -160,13 +162,15 @@ class TwoLayerMLP:
         #    - z2 will have shape (batch_size, n_output) = (batch_size, 10)
         # 2. z2 represents the final logits (no activation applied here)
         #    - Sigmoid activation will be applied later in predict() or loss function
-        #
-        # Variable to define:
-        # z2 = ...  # Final output logits
-        
-        raise NotImplementedError
-        
+        ###############################################################################################
+
+        # Use the autograd wrapper to perform numpy matrix multiplication and add the bias
+        # This is the Linear transformation
+        z2 = anp.dot(h1, self.W2) + self.b2
+
+        # Return z2        
         return z2
+
     
     def predict(self, X):
         """
@@ -179,21 +183,30 @@ class TwoLayerMLP:
         logits = self.forward(X)
         probs = self.softmax(logits)
         return np.argmax(probs, axis=1)
+
     
     def get_params(self):
         """Get model parameters as a flat array"""
-        # TODO: Concatenate all model parameters into a single flat array
+
+        ###############################################################################################
+        # Concatenate all model parameters into a single flat array
         #
         # This function is needed for automatic differentiation (autograd).
         # The grad() function requires all parameters to be in a single array.
         #
-        # You need to flatten and concatenate ALL parameters in the correct order:
+        # Parameters are:
         # 1. W1: weight matrix of first layer (shape: n_input × n_hidden)
         # 2. b1: bias vector of first layer (shape: n_hidden)
         # 3. W2: weight matrix of second layer (shape: n_hidden × n_output)  
         # 4. b2: bias vector of second layer (shape: n_output)
-        
-        raise NotImplementedError
+        ###############################################################################################
+                
+        # Concatenate all of the model tuples in to one array
+        params = np.concatenate([self.W1.flatten(), self.b1.flatten(), self.W2.flatten(), self.b2.flatten()])
+
+        # Return the single flat array
+        return params
+    
     
     def set_params(self, params):
         """Set model parameters from a flat array"""
@@ -270,42 +283,59 @@ class ThreeLayerMLP:
         Returns:
             Output logits of shape (batch_size, n_output)
         """
-        # TODO: Implement the forward pass for a three-layer neural network
-        # 
+
+        ###############################################################################################
+        # The forward pass for a three-layer neural network
+        #
         # This network has the structure: Input -> Hidden1 -> Hidden2 -> Output
         # Network topology: [784] -> [30] -> [30] -> [10] (for Fashion-MNIST)
         # With optional residual connections between hidden layers
-        
+        ###############################################################################################
+
+               
+        ###############################################################################################
         # First layer: linear transformation + sigmoid activation
-        # TODO: Implement z1 = X @ W1 + b1, then h1 = sigmoid(z1)
-        # 
-        # Step-by-step:
+        #
         # 1. Linear transformation: z1 = X @ W1 + b1
         #    - X has shape (batch_size, n_input) = (batch_size, 784)
         #    - W1 has shape (n_input, n_hidden1) = (784, 30)
         #    - b1 has shape (n_hidden1,) = (30,)
         #    - z1 will have shape (batch_size, n_hidden1) = (batch_size, 30)
         # 2. Apply sigmoid activation: h1 = sigmoid(z1)
-        
-        raise NotImplementedError
-        
+        #    - h1 is the output of the hidden layer, same shape as z1
+        ###############################################################################################
+
+        # Use the autograd wrapper to perform numpy matrix multiplication and add the bias
+        # This is the Linear transformation
+        z1 = anp.dot(X, self.W1) + self.b1
+
+        # Apply sigmoid activation to z1
+        h1 = self.sigmoid(z1)
+
+        ###############################################################################################
         # Second layer: linear transformation + sigmoid activation
-        # TODO: Implement z2 = h1 @ W2 + b2, then h2_raw = sigmoid(z2)
         #
-        # Step-by-step:
         # 1. Linear transformation: z2 = h1 @ W2 + b2
-        #    - h1 has shape (batch_size, n_hidden1) = (batch_size, 30)
-        #    - W2 has shape (n_hidden1, n_hidden2) = (30, 30)
+        #    - h1 has shape (batch_size, n_hidden1) = (batch_size, 784)
+        #    - W2 has shape (n_hidden1, n_hidden2) = (784, 30)
         #    - b2 has shape (n_hidden2,) = (30,)
         #    - z2 will have shape (batch_size, n_hidden2) = (batch_size, 30)
         # 2. Apply sigmoid activation: h2_raw = sigmoid(z2)
+        #    - h2_raw is the output of the hidden layer, same shape as z2
+        ###############################################################################################
+
+        # Use the autograd wrapper to perform numpy matrix multiplication and add the bias
+        # This is the Linear transformation
+        z2 = anp.dot(h1, self.W2) + self.b2
+
+        # Apply sigmoid activation to z1
+        h2_raw = self.sigmoid(z2)
         
-        raise NotImplementedError
-        
+        ###############################################################################################
         # Apply residual connection if enabled
-        # TODO: Implement residual connection logic
         #
         # Residual connections help with gradient flow in deep networks.
+        #
         # The idea is to add the input of a layer to its output: h2 = h2_raw + h1
         # This requires h1 and h2_raw to have the same shape (n_hidden1 == n_hidden2)
         #
@@ -313,18 +343,40 @@ class ThreeLayerMLP:
         #   h2 = h2_raw + h1  # Add skip connection from previous layer
         # Else:
         #   h2 = h2_raw       # Use normal activation without skip connection
+        ###############################################################################################
         
+        # If use_residual is true
         if self.use_residual:
-            raise NotImplementedError  # Residual connection: add previous layer output
+
+            # Add the previous layers output
+            # This adds skip connection from the previous layer
+            h2 = h2_raw + h1
+
+        # Else use_residual is false
         else:
-            raise NotImplementedError
-        
-        # Third layer: linear transformation (output layer)
-        # TODO: Implement z3 = h2 @ W3 + b3
-        
-        raise NotImplementedError
-        
+
+            # Use normal activation without adding the skip connection
+            h2 = h2_raw
+
+        ###############################################################################################
+        # Third layer: linear transformation (no activation for output logits)
+        #
+        # 1. Linear transformation: z3 = h2 @ W3 + b3
+        #    - h2 has shape (batch_size, n_hidden2) = (batch_size, 30)
+        #    - W3 has shape (n_hidden2, n_output) = (30, 10)
+        #    - b3 has shape (n_output,) = (10,)
+        #    - z3 will have shape (batch_size, n_output) = (batch_size, 10)
+        # 2. z3 represents the final logits (no activation applied here)
+        #    - Sigmoid activation will be applied later in predict() or loss function
+        ###############################################################################################
+                
+        # Use the autograd wrapper to perform numpy matrix multiplication and add the bias
+        # This is the Linear transformation
+        z3 = anp.dot(h2, self.W3) + self.b3
+
+        # Return z3   
         return z3
+
     
     def predict(self, X):
         """
@@ -340,12 +392,30 @@ class ThreeLayerMLP:
     
     def get_params(self):
         """Get model parameters as a flat array"""
-        # TODO: Concatenate all model parameters into a single flat array
+
+        ###############################################################################################
+        # Concatenate all model parameters into a single flat array
         #
         # This function is needed for automatic differentiation (autograd).
         # The grad() function requires all parameters to be in a single array.
-        
-        raise NotImplementedError
+        #
+        # Parameters are:
+        # 1. W1: weight matrix of first layer (shape: n_input × n_hidden1)
+        # 2. b1: bias vector of first layer (shape: n_hidden1)
+        # 3. W2: weight matrix of second layer (shape: n_hidden1 × n_hidden2)  
+        # 4. b2: bias vector of second layer (shape: n_hidden2)
+        # 5. W3: weight matrix of third layer (shape: n_hidden2 × n_output)  
+        # 6. b3: bias vector of third layer (shape: n_output)
+        ###############################################################################################
+                
+        # Concatenate all of the model tuples in to one array
+        params = np.concatenate([self.W1.flatten(), self.b1.flatten(), 
+                                 self.W2.flatten(), self.b2.flatten(),
+                                 self.W3.flatten(), self.b3.flatten()])
+
+        # Return the single flat array
+        return params
+    
     
     def set_params(self, params):
         """Set model parameters from a flat array"""
