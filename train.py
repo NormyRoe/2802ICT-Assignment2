@@ -135,10 +135,9 @@ def cross_entropy_loss(y_pred, y_true):
     Returns:
         Average cross-entropy loss
     """
-    # Apply softmax to get probabilities
-    probs = softmax(y_pred)
-    
-    # TODO: Compute cross-entropy loss with softmax
+
+    ###############################################################################################
+    # Compute cross-entropy loss with softmax
     #
     # Cross-entropy loss measures the difference between predicted probabilities
     # and true labels. It's commonly used for classification problems.
@@ -152,13 +151,21 @@ def cross_entropy_loss(y_pred, y_true):
     #    - Use anp.log() for autograd compatibility
     # 3. Sum across classes for each sample
     # 4. Apply negative sign and take mean
-    #
-    # Example:
-    # If y_true = [[0, 1, 0], [1, 0, 0]] and probs = [[0.1, 0.8, 0.1], [0.9, 0.05, 0.05]]
-    # Then loss = -mean([log(0.8), log(0.9)]) = -mean([-0.223, -0.105]) = 0.164
-    
-    raise NotImplementedError
-    
+    ###############################################################################################
+
+    # Apply softmax to get probabilities
+    probs = softmax(y_pred)
+
+    # Compute element-wise
+    element_wise = y_true * anp.log(probs)
+
+    # Sum across the classes for each sample to calculate sample_losses
+    sample_losses = anp.sum(element_wise, axis=1)
+
+    # Apply negative sign and take mean to calculate the loss
+    loss = -anp.mean(sample_losses)
+
+    # Return loss
     return loss
 
 
@@ -258,8 +265,9 @@ def train_model(model, X_train, y_train, X_val, y_val, X_test, y_test, epochs, l
             # Compute gradients
             grad_fn_batch = grad(batch_loss_fn)
             gradients = grad_fn_batch(params)
-            
-            # TODO: Update parameters using gradient descent
+
+            ###############################################################################################
+            # Update parameters using gradient descent
             #
             # Gradient descent updates parameters by moving in the opposite direction
             # of the gradient (steepest descent). This minimizes the loss function.
@@ -268,10 +276,15 @@ def train_model(model, X_train, y_train, X_val, y_val, X_test, y_test, epochs, l
             # 1. Multiply gradients by learning rate: learning_rate * gradients
             # 2. Subtract from current parameters: params - (learning_rate * gradients)
             # 3. Store result in new_params variable
-            #
-            # Note: 'learning_rate' is passed as a parameter to this function
+            ###############################################################################################
             
-            raise NotImplementedError
+            # Multiply gradients by learning rate to get the scaled gradients
+            scaled_gradients = learning_rate * gradients
+
+            # Subtract the scaled_gradients from the current parameters to get new_params
+            new_params = params - scaled_gradients
+            
+
             model.set_params(new_params)
             
             # Compute loss for recording with updated parameters
