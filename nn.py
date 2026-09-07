@@ -297,8 +297,8 @@ class ThreeLayerMLP:
         # First layer: linear transformation + sigmoid activation
         #
         # 1. Linear transformation: z1 = X @ W1 + b1
-        #    - X has shape (batch_size, n_input) = (batch_size, 784)
-        #    - W1 has shape (n_input, n_hidden1) = (784, 30)
+        #    - X has shape (batch_size, n_input) = (batch_size, 30)
+        #    - W1 has shape (n_input, n_hidden1) = (30, 30)
         #    - b1 has shape (n_hidden1,) = (30,)
         #    - z1 will have shape (batch_size, n_hidden1) = (batch_size, 30)
         # 2. Apply sigmoid activation: h1 = sigmoid(z1)
